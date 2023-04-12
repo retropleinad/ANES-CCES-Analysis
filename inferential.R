@@ -36,10 +36,10 @@ ttest_result <- "Low p-value and high t-value indicate mean not close to 1984"
 
 
 # Linear Regression: Does age affect pid
+# https://towardsdatascience.com/understanding-linear-regression-output-in-r-7a9cbda948b3
 linear_regression <- lm(ces[, 'pid7'] ~ ces[, 'birthyr'])
 linear_regression
 summary(linear_regression)
-# https://towardsdatascience.com/understanding-linear-regression-output-in-r-7a9cbda948b3
 
 
 # Interaction Terms: age, gender, race
@@ -51,11 +51,11 @@ summary(interaction_lm)
 
 
 # Logistic Regression
+# https://towardsdatascience.com/simply-explained-logistic-regression-with-example-in-r-b919acb1d6b3
 logistic_regression <- glm(ces[, 'pid7'] / 8 ~ ces[, 'birthyr'],
                            family = binomial(link = "logit"))
 logistic_regression
 summary(logistic_regression)
-# https://towardsdatascience.com/simply-explained-logistic-regression-with-example-in-r-b919acb1d6b3
 
 
 # Interaction Terms: age, gender, race
