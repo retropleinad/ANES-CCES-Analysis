@@ -65,6 +65,3 @@ interaction_glm <- glm(pid7 / 8 ~ birthyr + gender4 + race,
 interaction_glm
 summary(interaction_glm)
 
-
-# Plot a graph
-plot(ces[, 'pid7'], ces[, 'birthyr'])
