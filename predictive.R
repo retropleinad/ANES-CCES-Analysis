@@ -85,3 +85,24 @@ ridge_sse <- sum((ridge_y_predicted - ridge_dependent)^2)
 ridge_rsq <- 1 - ridge_sse / ridge_sst
 ridge_rsq
 
+
+# Lasso Regression
+# https://www.statology.org/lasso-regression-in-r/
+lasso_y <- ces$pid7
+lasso_x <- data.matrix(ces[, c('birthyr', 'gender4', 'race')])
+
+lasso_kfold_model <- cv.glmnet(lasso_x, lasso_y, alpha=1)
+lasso_best_lambda <- lasso_kfold_model$lambda.min
+lasso_best_lambda
+
+plot(lasso_kfold_model)
+
+lasso_best_model <- glmnet(lasso_x, lasso_y, alpha=1, lambda=lasso_best_lambda)
+coef(lasso_best_model)
+
+lasso_y_predicted <- predict(lasso_best_model, s=lasso_best_lambda, newx=lasso_x)
+
+lasso_sst <- sum((lasso_y - mean(lasso_y))^2)
+lasso_sse <- sum((lasso_y_predicted - lasso_y)^2)
+lasso_rsq <- 1 - lasso_sse / lasso_sst
+lasso_rsq
