@@ -1,6 +1,8 @@
 library(dplyr)
 library(tidyr)
+
 library(caret)
+library(glmnet)
 
 
 # Bring in source file and look at it
@@ -51,3 +53,35 @@ rmse_holdout_test <- sqrt(mean(holdout_test$residuals ** 2))
 rmse_holdout_train
 rmse_holdout_test
 rmse_holdout_train / rmse_holdout_test
+
+
+# Ridge Regression
+# https://www.statology.org/ridge-regression-in-r/
+ridge_dependent <- ces$pid7
+ridge_independent <- data.matrix(ces[, c('birthyr', 'gender4', 'race')])
+
+ridge_model <- glmnet(ridge_independent, ridge_dependent, alpha=0)
+summary(ridge_model)
+
+kfold_ridge_model <- cv.glmnet(ridge_independent, ridge_dependent, alpha=0)
+
+ridge_best_lambda <- kfold_ridge_model$lambda.min
+ridge_best_lambda
+
+plot(kfold_ridge_model)
+
+best_ridge_model <- glmnet(ridge_independent, ridge_dependent,
+                           alpha=0, lambda=ridge_best_lambda)
+coef(best_ridge_model)
+
+plot(ridge_model, xvar='lambda')
+
+ridge_y_predicted <- predict(best_ridge_model,
+                             s=ridge_best_lambda,
+                             newx=ridge_independent)
+
+ridge_sst <- sum((ridge_dependent - mean(ridge_dependent))^2)
+ridge_sse <- sum((ridge_y_predicted - ridge_dependent)^2)
+ridge_rsq <- 1 - ridge_sse / ridge_sst
+ridge_rsq
+
