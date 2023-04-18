@@ -3,6 +3,7 @@ library(tidyr)
 
 library(caret)
 library(glmnet)
+library(gbm)
 
 
 # Bring in source file and look at it
@@ -106,3 +107,48 @@ lasso_sst <- sum((lasso_y - mean(lasso_y))^2)
 lasso_sse <- sum((lasso_y_predicted - lasso_y)^2)
 lasso_rsq <- 1 - lasso_sse / lasso_sst
 lasso_rsq
+
+
+# Gradient Boosting
+# https://www.projectpro.io/recipes/apply-gradient-boosting-r-for-regression
+head(ces)
+summary(ces)
+dim(ces)
+
+gradient_partition <- createDataPartition(y=ces$pid7, p=.8, list=FALSE)
+gradient_train <- ces[gradient_partition, ]
+gradient_test <- ces[-gradient_partition, ]
+
+gradient_test_x <- gradient_test[, c('birthyr', 'gender4', 'race')]
+gradient_test_y <- gradient_test[, 'pid7']
+
+gradient_model = gbm(pid7 ~ birthyr + gender4 + race,
+                     data = gradient_train,
+                     distribution = 'gaussian',
+                     cv.folds = 10,
+                     shrinkage = .01,
+                     n.minobsinnode = 10,
+                     n.trees = 500)
+
+print(gradient_model)
+summary(gradient_model)
+
+gradient_pred_y <- predict.gbm(gradient_model, gradient_test_x)
+gradient_pred_y
+
+gradient_residuals <- gradient_test_y - gradient_pred_y
+gradient_rmse <- sqrt(mean(gradient_residuals^2))
+gradient_rmse
+
+gradient_y_test_mean <- mean(gradient_test_y)
+gradient_total_sum_squares <- sum((gradient_test_y - gradient_y_test_mean)^2)
+gradient_total_sum_squares
+
+gradient_residual_sum_squares <- sum(gradient_residuals^2)
+
+gradient_rsq <- 1 - (gradient_residual_sum_squares / gradient_total_sum_squares)
+gradient_rsq
+
+gradient_x_axis <- 1:length(gradient_pred_y)
+plot(gradient_x_axis, gradient_test_y, col='blue', pch=20, cex=.9)
+lines(gradient_x_axis, gradient_pred_y, col='red', pch=20, cex=.9)
