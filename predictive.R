@@ -4,6 +4,8 @@ library(tidyr)
 library(caret)
 library(glmnet)
 library(gbm)
+library(randomForest)
+library(caTools)
 
 
 # Bring in source file and look at it
@@ -152,3 +154,26 @@ gradient_rsq
 gradient_x_axis <- 1:length(gradient_pred_y)
 plot(gradient_x_axis, gradient_test_y, col='blue', pch=20, cex=.9)
 lines(gradient_x_axis, gradient_pred_y, col='red', pch=20, cex=.9)
+
+
+# Random Forest
+# https://towardsdatascience.com/random-forest-in-r-f66adf80ec9
+dim(ces)
+
+forest_sample <- sample.split(ces$pid7, SplitRatio=.74)
+forest_train <- subset(ces, forest_sample == TRUE)
+forest_test <- subset(ces, forest_sample == FALSE)
+
+forest_model <- randomForest(pid7 ~ birthyr + gender4 + race,
+                             data=forest_train)
+
+forest_model
+summary(forest_model)
+
+forest_predict <- predict(forest_model,
+                          newdata=forest_test[, c('birthyr', 'gender4', 'race')])
+forest_predict
+
+forest_predictions <- table(forest_test[, 'pid7'],
+                            forest_predict)
+forest_predictions
