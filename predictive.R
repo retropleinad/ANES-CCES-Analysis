@@ -177,3 +177,29 @@ forest_predict
 forest_predictions <- table(forest_test[, 'pid7'],
                             forest_predict)
 forest_predictions
+
+
+# Elastic Net
+# https://www.geeksforgeeks.org/elastic-net-regression-in-r-programming/#
+elastic_x <- ces[, c('birthyr', 'gender4', 'race')]
+elastic_y <- ces[, 'pid7']
+
+elastic_control <- trainControl(method = 'repeatedcv',
+                                number = 5,
+                                repeats = 5,
+                                search = 'random',
+                                verboseIter = TRUE)
+
+elastic_model <- train(pid7 ~ birthyr + gender4 + race,
+                       data = ces,
+                       method = 'glmnet',
+                       preProcess = c('center', 'scale'),
+                       tuneLength = 25,
+                       trControl = control)
+elastic_model
+
+elastic_prediction <- predict(elastic_model, ces)
+elastic_prediction
+
+elastic_rsq <- cor(elastic_x, elastic_prediction)^2
+elastic_rsq
