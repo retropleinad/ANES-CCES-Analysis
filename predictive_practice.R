@@ -66,6 +66,28 @@ gradient_rsq
 
 # Cross-validated ridge regression
 # https://www.rdocumentation.org/packages/glmnet/versions/4.1-7/topics/cv.glmnet
-ridge_model <- cv.glmnet(pid7_normalized ~ educ + birthyr,
-                         data = ces,
+ridge_y <- ces$pid7
+ridge_x <- data.matrix(ces[, c('educ', 'birthyr')])
+
+ridge_model <- cv.glmnet(x = ridge_x,
+                         y = ridge_y,
+                         nfolds = 10,
                          alpha=0)
+ridge_model
+summary(ridge_model)
+
+ridge_best_lambda <- kfold_ridge_model$lambda.min
+
+ridge_y_predicted <- predict(ridge_model,
+                             newx = ridge_x)
+
+ridge_sst <- sum((ridge_x - mean(ridge_x))^2)
+ridge_sst
+
+ridge_sse <- sum((ridge_y_predicted - ridge_y)^2)
+ridge_sse
+
+ridge_rsq <- 1 - ridge_sse / ridge_sst
+ridge_rsq
+
+plot(ridge_model)
