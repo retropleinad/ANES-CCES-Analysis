@@ -31,27 +31,41 @@ head(ces[, 'pid7_normalized'])
 kfold_control <- trainControl(method='cv', number=5)
 
 kfold_model <- train(pid7_normalized ~ educ + birthyr,
-                     data=ces, method='lm', trControl=kfold_control)
+                     data=ces,
+                     method='lm',
+                     trControl=kfold_control)
 kfold_model
 
 # Gradient with k-fold
-# https://search.r-project.org/CRAN/refmans/ecospat/html/ecospat.cv.gbm.html
+# https://www.rdocumentation.org/packages/gbm/versions/2.1.8.1/topics/gbm
 gradient_model <- gbm(pid7_normalized ~ educ + birthyr,
                       data = ces,
                       distribution = 'bernoulli',
                       cv.folds = 10,
-                      n.cores = 2)
+                      n.cores = 2,
+                      n.trees = 500)
+gradient_model
+summary(gradient_model)
 
-gradient_predict <- ecospat.cv.gbm(gbm.obj=gradient_model,
-                                   ces,
-                                   k=10,
-                                   cv.lim=10,
-                                   jack.knife=FALSE)
+gradient_pred_y <- predict.gbm(gradient_model, ces[, c('educ', 'birthyr')])
+gradient_pred_y
+
+gradient_residuals <- ces[, 'pid7'] - gradient_pred_y
+gradient_rmse <- sqrt(mean(gradient_residuals^2))
+gradient_rmse
+
+gradient_y_test_mean <- mean(ces[, 'pid7'])
+gradient_total_sum_squares <- sum((ces[, 'pid7'] - gradient_y_test_mean)^2)
+gradient_total_sum_squares
+
+gradient_residual_sum_squares <- sum(gradient_residuals^2)
+gradient_residual_sum_squares
+
+gradient_rsq <- 1 - (gradient_residual_sum_squares / gradient_total_sum_squares)
+gradient_rsq
 
 # Cross-validated ridge regression
 # https://www.rdocumentation.org/packages/glmnet/versions/4.1-7/topics/cv.glmnet
 ridge_model <- cv.glmnet(pid7_normalized ~ educ + birthyr,
                          data = ces,
                          alpha=0)
-
-# Cross-validated
