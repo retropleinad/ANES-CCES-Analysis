@@ -76,8 +76,6 @@ ridge_model <- cv.glmnet(x = ridge_x,
 ridge_model
 summary(ridge_model)
 
-ridge_best_lambda <- kfold_ridge_model$lambda.min
-
 ridge_y_predicted <- predict(ridge_model,
                              newx = ridge_x)
 
