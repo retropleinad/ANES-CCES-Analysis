@@ -3,43 +3,45 @@ library(glmnet)
 
 
 ces = read.csv(file = 'data/CES22_Common.csv')
-
-# Find columns we want to use
-# educ <- 1 is least, 6 is most
-# race <- very categorical
-# votereg <- yes or no
-# pid7 <- important somehow
-# region <- census region
-# cc22_300a <- tv news
-# cc22_300c <- paper news
-# cc19_302 <- state of economic changes
-# cc22_303 <- household income change
-# cc22_307 <- do the police make you feel safe
-# cc22_306 <- covid vaccination status
-# cc22_320a <- Biden approval
-# cc22_327a <- m4a
-# cc22_333 <- climate change with least believing it is most erious
-# cc22_340a <- self lib/con rating with 1 being most liberal
-# cc22_340c <- Biden lib/con rating
-# cc22_340d <- Trump lib/con rating
-# cc22_340e <- Dem lib/con rating
-# cc22_340f <- GOP lib/con rating
-# cc22_340g <- SCOTUS lib/con rating
-# cc22_363 <- Plan to vote
-# pew_religimp <- religion most important 1 to least 4
-# pew_churatd <- church attendance, 1 most 6 least
-# investor <- 1 or 2 do you have stock
-# union <- 1 in a union, 3 never in a union
-# ownhome <- 1 own 2 rent
-# newsint <- 1 follow the news to 4 never
-# cc22_401 <- voted in 2022 election with 1 no 5 did
-# cc22_430c <- amount contributed to candidates
-# numchildren <- number of children
-
-
-# Look at variables
 cols <- colnames(ces)
 sort(cols)
+
+
+# Find columns we want to use
+ces <- ces[, c('pid7', # y variable
+               'gender4', # gender we use for weight
+               'race',         # very categorical
+               'birthyr', # used for weight
+               'educ',         # 1 is least, 6 is most
+               'votereg', # yes or no
+               'region', # census region
+               'CC22_300a', # tv news
+               'CC22_300c', # paper news
+               'CC22_302', # state of economic changes
+               'CC22_303', # household income change
+               'CC22_307', # do the police make you feel safe
+               'CC22_306', # covid vaccination status
+               'CC22_320a', # Biden approval
+               'CC22_327a', # m4a
+               'CC22_333', # climate change with least believing it is most serious
+               'CC22_340a', # self lib/con rating with 1 being most liberal
+               'CC22_340c', # Biden lib/con rating
+               'CC22_340d', # Trump lib/con rating
+               'CC22_340e', # Dem lib/con rating
+               'CC22_340f', # GOP lib/con rating
+               'CC22_340g', # SCOTUS lib/con rating
+               'CC22_363',     # Plan to vote
+               'pew_religimp', # religion most important 1 to least 4
+               'pew_churatd',  # church attendance, 1 most 6 least
+               'investor',     # 1 or 2 do you have stock
+               'union',        # 1 in a union, 3 never in a union
+               'ownhome',      # 1 own 2 rent
+               'newsint',      # 1 follow the news to 4 never
+               'CC22_401', # voted in 2022 election with 1 no 5 did
+               'CC22_430c', # amount contributed to candidates
+               'numchildren' # number of children
+               )
+           ]
 
 
 # Apply weights by gender
@@ -94,30 +96,30 @@ age_weights <- Dict$new(
 # votereg <- yes or no
 # pid7 <- important somehow
 # region <- census region
-# cc22_300a <- tv news
-# cc22_300c <- paper news
+# CC22_300a <- tv news
+# CC22_300c <- paper news
 # cc19_302 <- state of economic changes
-# cc22_303 <- household income change
-# cc22_307 <- do the police make you feel safe
-# cc22_306 <- covid vaccination status
-# cc22_320a <- Biden approval
-# cc22_327a <- m4a
-# cc22_333 <- climate change with least believing it is most erious
-# cc22_340a <- self lib/con rating with 1 being most liberal
-# cc22_340c <- Biden lib/con rating
-# cc22_340d <- Trump lib/con rating
-# cc22_340e <- Dem lib/con rating
-# cc22_340f <- GOP lib/con rating
-# cc22_340g <- SCOTUS lib/con rating
-# cc22_363 <- Plan to vote
+# CC22_303 <- household income change
+# CC22_307 <- do the police make you feel safe
+# CC22_306 <- covid vaccination status
+# CC22_320a <- Biden approval
+# CC22_327a <- m4a
+# CC22_333 <- climate change with least believing it is most erious
+# CC22_340a <- self lib/con rating with 1 being most liberal
+# CC22_340c <- Biden lib/con rating
+# CC22_340d <- Trump lib/con rating
+# CC22_340e <- Dem lib/con rating
+# CC22_340f <- GOP lib/con rating
+# CC22_340g <- SCOTUS lib/con rating
+# CC22_363 <- Plan to vote
 # pew_religimp <- religion most important 1 to least 4
 # pew_churatd <- church attendance, 1 most 6 least
 # investor <- 1 or 2 do you have stock
 # union <- 1 in a union, 3 never in a union
 # ownhome <- 1 own 2 rent
 # newsint <- 1 follow the news to 4 never
-# cc22_401 <- voted in 2022 election with 1 no 5 did
-# cc22_430c <- amount contributed to candidates
+# CC22_401 <- voted in 2022 election with 1 no 5 did
+# CC22_430c <- amount contributed to candidates
 # numchildren <- number of children
 
 ces <- ces[, c('educ', 'race', 'votereg', '')]
