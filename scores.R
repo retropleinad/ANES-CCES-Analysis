@@ -59,7 +59,6 @@ ces <- merge(x = ces, y = gender_weights,
              by.x = 'gender4', by.y = 'survey_val',
              all.x = TRUE)
 
-
 # Apply weights by race
 unique(ces[, 'race'])
 
@@ -81,6 +80,24 @@ head(ces[, 'age_estimate'])
 max(ces[, 'age_estimate']) # 98
 min(ces[, 'age_estimate']) # 19
 
+ces['age_category'] <- ifelse(ces[, 'age_estimate'] <= 44,
+                              1,
+                              ifelse(ces[, 'age_estimate'] <= 64, 2, 3)
+                              )
+head(ces[, 'age_category'])
+
+age_weights <- data.frame(
+  category = c(1:3),
+  age_mapping = c('18 to 44',
+                  '45 to 64',
+                  '65 and over'),
+  age_weight_coeff = c(.465, .326, .218)
+)
+
+ces <- merge(x = ces, y = age_weights,
+             by.x = 'age_category', by.y = 'category',
+             all.x = TRUE)
+
 # Apply weights by education
 educ_weights <- data.frame(
   survey_val = c(1:6),
@@ -98,18 +115,47 @@ ces <- merge(x = ces, y = educ_weights,
              all.x = TRUE)
 head(ces)
 
+# Combine weights into one column
+ces['weight'] <- ces[, 'gender_weight_coeff'] *
+                 ces[, 'race_weight_coeff'] *
+                 ces[, 'age_weight_coeff'] *
+                 ces[, 'educ_weight_coeff']
+
 # Cross-validated ridge regression for all variables on pid7
 y <- data.matrix(select(ces, pid7))
 y
 
-df_x <- select(ces, c(1:9), -pid7)
+cols <- colnames(ces)
+sort(cols)
+
+df_x <- select(ces,
+              -age_category, -age_estimate, -age_mapping, -age_weight_coeff,
+              -educ_mapping, -educ_weight_coeff,
+              -gender_mapping, -gender_weight_coeff,
+              -race_mapping, -race_weight_coeff)
+
+
 makeX(df_x, sparse=FALSE)
+cols <- colnames(df_x)
+sort(cols)
+
+for (i in 1:length(cols)) {
+  col <- cols[i]
+  df_x[is.na(df_x[, col]), col] <- 0
+}
+head(df_x)
+# Next step: Don't turn everything into 0
+
+
 x <- data.matrix(df_x)
+
+weights = ces[, 'weight']
 
 ridge_model <- cv.glmnet(x = x,
                          y = y,
                          nfolds = 10,
-                         alpha=0)
+                         alpha = 0,
+                         weights = weights)
 ridge_model
 summary(ridge_model)
 
