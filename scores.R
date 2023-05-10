@@ -121,19 +121,40 @@ ces['weight'] <- ces[, 'gender_weight_coeff'] *
                  ces[, 'age_weight_coeff'] *
                  ces[, 'educ_weight_coeff']
 
-# Cross-validated ridge regression for all variables on pid7
-y <- data.matrix(select(ces, pid7))
-y
 
+# Clean y variable for ridge model
+pid7_mapping <- data.frame(
+  survey_val = c(1, 2, 7, 6, 3, 5, 4, 8, 9), # clean this up next
+  pid7_mapping = c('Strong Democrat',
+                   'The Democratic Party',
+                   'Not very strong Democrat',
+                   'Neither',
+                   'Not sure',
+                   'Not very strong Republican',
+                   'The Republican Party',
+                   'Strong Republican'),
+  pid7_cleaned = c(1, 2, 3, 4, 4, 5, 6, 7)
+)
+
+ces <- merge(x = ces, y = pid7_mapping,
+             by.x = 'pid7', by.y = 'survey_val',
+             all.x = FALSE)
+head(ces)
+
+# Set 8 to 4 and
+df_x <- df_x[complete.cases(df_x$pid7),]
+head(df_x)
+
+# Transform data for ridge model
 cols <- colnames(ces)
 sort(cols)
 
 df_x <- select(ces,
+              -pid7_mapping
               -age_category, -age_estimate, -age_mapping, -age_weight_coeff,
               -educ_mapping, -educ_weight_coeff,
               -gender_mapping, -gender_weight_coeff,
               -race_mapping, -race_weight_coeff)
-
 
 makeX(df_x, sparse=FALSE)
 cols <- colnames(df_x)
@@ -144,13 +165,16 @@ for (i in 1:length(cols)) {
   df_x[is.na(df_x[, col]), col] <- 0
 }
 head(df_x)
-# Next step: Don't turn everything into 0
 
+weights = df_x$weight
+
+df_x <- select(df_x, -pid7, -weights)
 
 x <- data.matrix(df_x)
+y <- data.matrix(select(ces, pid7))
+y
 
-weights = ces[, 'weight']
-
+# Cross-validated ridge regression for all variables on pid7
 ridge_model <- cv.glmnet(x = x,
                          y = y,
                          nfolds = 10,
@@ -158,13 +182,10 @@ ridge_model <- cv.glmnet(x = x,
                          weights = weights)
 ridge_model
 summary(ridge_model)
-
-best_lambda <- ridge_model$lambda.min
-
-# Rebuild ridge model
+coef(ridge_model)
 
 
-# Look at model accuracy
+# Look at initial ridge model accuracy
 y_predicted <- predict(ridge_model,
                        newx = x)
 
@@ -178,3 +199,21 @@ rsq <- 1 - sse / sst
 rsq
 
 plot(ridge_model)
+
+
+# Rebuild ridge model
+best_lambda <- ridge_model$lambda.min
+
+rebuilt_ridge_model <- glmnet(x = x,
+                              y = y,
+                              nfolds = 10,
+                              alpha = 0,
+                              weights = weights,
+                              lambda = best_lambda)
+
+rebuilt_ridge_model
+summary(rebuilt_ridge_model)
+coef(rebuilt_ridge_model)
+
+
+# Look at rebuilt ridge model accuracy
