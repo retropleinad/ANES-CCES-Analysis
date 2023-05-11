@@ -124,7 +124,7 @@ ces['weight'] <- ces[, 'gender_weight_coeff'] *
 
 # Clean y variable for ridge model
 pid7_mapping <- data.frame(
-  survey_val = c(1, 2, 7, 6, 3, 5, 4, 8, 9), # clean this up next
+  survey_val = c(1, 3, 6, 6, 3, 5, 4, 8, 9), # clean this up next
   pid7_mapping = c('Strong Democrat',
                    'The Democratic Party',
                    'Not very strong Democrat',
