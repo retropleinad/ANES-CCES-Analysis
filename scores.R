@@ -122,39 +122,40 @@ ces['weight'] <- ces[, 'gender_weight_coeff'] *
                  ces[, 'educ_weight_coeff']
 
 
-# Clean y variable for ridge model
+# Transform y variable for ridge model
 pid7_mapping <- data.frame(
-  survey_val = c(1, 3, 6, 6, 3, 5, 4, 8, 9), # clean this up next
-  pid7_mapping = c('Strong Democrat',
-                   'The Democratic Party',
-                   'Not very strong Democrat',
-                   'Neither',
-                   'Not sure',
-                   'Not very strong Republican',
-                   'The Republican Party',
-                   'Strong Republican'),
+  survey_val = c(1, 3, 2, 4, 8, 6, 5, 7),
+  pid7_text = c('Strong Democrat',
+                'The Democratic Party',
+                'Not very strong Democrat',
+                'Neither',
+                'Not sure',
+                'Not very strong Republican',
+                'The Republican Party',
+                'Strong Republican'),
   pid7_cleaned = c(1, 2, 3, 4, 4, 5, 6, 7)
 )
 
 ces <- merge(x = ces, y = pid7_mapping,
              by.x = 'pid7', by.y = 'survey_val',
              all.x = FALSE)
-head(ces)
+head(ces$pid7_cleaned)
 
-# Set 8 to 4 and
-df_x <- df_x[complete.cases(df_x$pid7),]
-head(df_x)
+y <- data.matrix(select(ces, pid7_cleaned))
+head(y)
 
-# Transform data for ridge model
+
+# Transform x variable for ridge model
 cols <- colnames(ces)
 sort(cols)
 
 df_x <- select(ces,
-              -pid7_mapping
+              -pid7, -pid7_text, -pid7_cleaned,
               -age_category, -age_estimate, -age_mapping, -age_weight_coeff,
               -educ_mapping, -educ_weight_coeff,
               -gender_mapping, -gender_weight_coeff,
-              -race_mapping, -race_weight_coeff)
+              -race_mapping, -race_weight_coeff,
+              -weight)
 
 makeX(df_x, sparse=FALSE)
 cols <- colnames(df_x)
@@ -166,37 +167,35 @@ for (i in 1:length(cols)) {
 }
 head(df_x)
 
-weights = df_x$weight
-
-df_x <- select(df_x, -pid7, -weights)
-
 x <- data.matrix(df_x)
-y <- data.matrix(select(ces, pid7))
-y
+
 
 # Cross-validated ridge regression for all variables on pid7
+weights = ces$weight
+
 ridge_model <- cv.glmnet(x = x,
                          y = y,
                          nfolds = 10,
                          alpha = 0,
                          weights = weights)
+
 ridge_model
 summary(ridge_model)
 coef(ridge_model)
 
 
 # Look at initial ridge model accuracy
-y_predicted <- predict(ridge_model,
-                       newx = x)
+ces$ridge_y_predicted <- predict(ridge_model,
+                                 newx = x)
 
-sst <- sum((x - mean(x))^2)
-sst
+ridge_sst <- sum((x - mean(x))^2)
+ridge_sst
 
-sse <- sum((y_predicted - y)^2)
-sse
+ridge_sse <- sum((ces$ridge_y_predicted - y)^2)
+ridge_sse
 
-rsq <- 1 - sse / sst
-rsq
+ridge_rsq <- 1 - ridge_sse / ridge_sst
+ridge_rsq
 
 plot(ridge_model)
 
@@ -217,3 +216,16 @@ coef(rebuilt_ridge_model)
 
 
 # Look at rebuilt ridge model accuracy
+ces$rebuilt_y_predicted <- predict(rebuilt_ridge_model,
+                                   newx = x)
+
+rebuilt_sst <- sum((x - mean(x))^2)
+rebuilt_sst
+
+rebuilt_sse <- sum((ces$rebuilt_y_predicted - y)^2)
+rebuilt_sse
+
+rebuilt_rsq <- 1 - rebuilt_sse / rebuilt_sst
+rebuilt_rsq
+
+plot(ridge_model)
