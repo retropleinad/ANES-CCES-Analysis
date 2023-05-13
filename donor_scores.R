@@ -111,11 +111,23 @@ gradient_model <- gbm(CC22_430c ~ gender4 + race + birthyr + educ + votereg,
                       cv.folds = 10,
                       shrinkage = .01,
                       n.minobsinnode = 10,
-                      n.trees = 500).
+                      n.trees = 500)
 
 gradient_model
 summary(gradient_model)
 
 
 # Look at accuracy of model
-gradient_pred_y <- predict.gbm
+ces$gradient_pred_y <- predict.gbm(gradient_model, ces[, c('gender4', 'race',
+                                                           'birthyr', 'educ',
+                                                           'votereg')])
+head(ces)
+
+gradient_residuals <- ces$CC22_430c - ces$gradient_pred_y
+gradient_rmse <- sqrt(mean(gradient_residuals^2))
+gradient_rmse
+
+gradient_tss <- sum((ces$CC22_430c - mean(ces$CC22_430c)))
+gradient_rss <- sum(gradient_residuals^2)
+gradient_rsq <- 1 - (gradient_rss / gradient_tss)
+gradient_rsq
