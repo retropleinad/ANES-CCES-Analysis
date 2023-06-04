@@ -188,7 +188,7 @@ coef(ridge_model)
 ces$ridge_y_predicted <- predict(ridge_model,
                                  newx = x)
 
-ridge_sst <- sum((x - mean(x))^2)
+ridge_sst <- sum((y - mean(y))^2)
 ridge_sst
 
 ridge_sse <- sum((ces$ridge_y_predicted - y)^2)
@@ -219,7 +219,7 @@ coef(rebuilt_ridge_model)
 ces$rebuilt_y_predicted <- predict(rebuilt_ridge_model,
                                    newx = x)
 
-rebuilt_sst <- sum((x - mean(x))^2)
+rebuilt_sst <- sum((y - mean(y))^2)
 rebuilt_sst
 
 rebuilt_sse <- sum((ces$rebuilt_y_predicted - y)^2)
