@@ -229,3 +229,18 @@ rebuilt_rsq <- 1 - rebuilt_sse / rebuilt_sst
 rebuilt_rsq
 
 plot(ridge_model)
+
+
+# Round scores to the nearest pid7 and compare difference
+# Result: Decreases rsq
+ces$rounded_predicted <- round(ces$rebuilt_y_predicted, 0)
+head(ces[, c('pid7', 'rounded_predicted')])
+
+rounded_sst <- rebuilt_sst
+rounded_sst
+
+rounded_sse <- sum((ces$rounded_predicted - y)^2)
+rounded_sse
+
+rounded_rsq <- 1 - rounded_sse / rounded_sst
+rounded_rsq
